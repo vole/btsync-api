@@ -22,6 +22,7 @@ func structToMap(i interface{}) map[string]string {
   for i := 0; i < iVal.NumField(); i++ {
     f := iVal.Field(i)
     tag := typ.Field(i).Tag.Get("json")
+
     // Convert each type into a string for the url.Values string map
     var v string
     switch f.Interface().(type) {

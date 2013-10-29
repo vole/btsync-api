@@ -1,7 +1,6 @@
 package btsync_api
 
 import (
-  "encoding/json"
   "strings"
 )
 
@@ -18,15 +17,8 @@ func AddFolder(folder string, secret string) (*BasicResponse, error) {
     },
   }
 
-  rawJson, err := request.Get()
-  if err != nil {
-    return nil, err
-  }
-
   var response BasicResponse
-  if err := json.Unmarshal(rawJson, &response); err != nil {
-    return nil, err
-  }
+  request.GetResponse(&response)
 
   return &response, nil
 }
@@ -39,15 +31,8 @@ func RemoveFolder(secret string) (*BasicResponse, error) {
     },
   }
 
-  rawJson, err := request.Get()
-  if err != nil {
-    return nil, err
-  }
-
   var response BasicResponse
-  if err := json.Unmarshal(rawJson, &response); err != nil {
-    return nil, err
-  }
+  request.GetResponse(&response)
 
   return &response, nil
 }
@@ -60,15 +45,8 @@ func GetFolder(secret string) (*GetFoldersResponse, error) {
     },
   }
 
-  rawJson, err := request.Get()
-  if err != nil {
-    return nil, err
-  }
-
   var response GetFoldersResponse
-  if err := json.Unmarshal(rawJson, &response); err != nil {
-    return nil, err
-  }
+  request.GetResponse(&response)
 
   return &response, nil
 }
@@ -86,15 +64,8 @@ func GetFilesForPath(secret string, path string) (*GetFilesResponse, error) {
     },
   }
 
-  rawJson, err := request.Get()
-  if err != nil {
-    return nil, err
-  }
-
   var response GetFilesResponse
-  if err := json.Unmarshal(rawJson, &response); err != nil {
-    return nil, err
-  }
+  request.GetResponse(&response)
 
   return &response, nil
 }
@@ -113,15 +84,8 @@ func SetFilePrefs(secret string, path string, download bool) (*BasicResponse, er
     },
   }
 
-  rawJson, err := request.Get()
-  if err != nil {
-    return nil, err
-  }
-
   var response BasicResponse
-  if err := json.Unmarshal(rawJson, &response); err != nil {
-    return nil, err
-  }
+  request.GetResponse(&response)
 
   return &response, nil
 }
@@ -134,15 +98,8 @@ func GetFolderPeers(secret string) (*GetFolderPeersResponse, error) {
     },
   }
 
-  rawJson, err := request.Get()
-  if err != nil {
-    return nil, err
-  }
-
   var response GetFolderPeersResponse
-  if err := json.Unmarshal(rawJson, &response); err != nil {
-    return nil, err
-  }
+  request.GetResponse(&response)
 
   return &response, nil
 }
@@ -153,15 +110,8 @@ func GetSecrets() (*GetSecretsResponse, error) {
     Args:   map[string]string{},
   }
 
-  rawJson, err := request.Get()
-  if err != nil {
-    return nil, err
-  }
-
   var response GetSecretsResponse
-  if err := json.Unmarshal(rawJson, &response); err != nil {
-    return nil, err
-  }
+  request.GetResponse(&response)
 
   return &response, nil
 }
@@ -174,15 +124,8 @@ func GetFolderPrefs(secret string) (*GetFolderPrefsResponse, error) {
     },
   }
 
-  rawJson, err := request.Get()
-  if err != nil {
-    return nil, err
-  }
-
   var response GetFolderPrefsResponse
-  if err := json.Unmarshal(rawJson, &response); err != nil {
-    return nil, err
-  }
+  request.GetResponse(&response)
 
   return &response, nil
 }
@@ -199,15 +142,8 @@ func SetFolderPrefs(secret string, prefs map[string]string) (*BasicResponse, err
     request.Args[key] = string(value)
   }
 
-  rawJson, err := request.Get()
-  if err != nil {
-    return nil, err
-  }
-
   var response BasicResponse
-  if err := json.Unmarshal(rawJson, &response); err != nil {
-    return nil, err
-  }
+  request.GetResponse(&response)
 
   return &response, nil
 }
@@ -220,15 +156,8 @@ func GetFolderHosts(secret string) (*GetFolderHostsResponse, error) {
     },
   }
 
-  rawJson, err := request.Get()
-  if err != nil {
-    return nil, err
-  }
-
   var response GetFolderHostsResponse
-  if err := json.Unmarshal(rawJson, &response); err != nil {
-    return nil, err
-  }
+  request.GetResponse(&response)
 
   return &response, nil
 }
@@ -242,15 +171,8 @@ func SetFolderHosts(secret string, hosts []string) (*BasicResponse, error) {
     },
   }
 
-  rawJson, err := request.Get()
-  if err != nil {
-    return nil, err
-  }
-
   var response BasicResponse
-  if err := json.Unmarshal(rawJson, &response); err != nil {
-    return nil, err
-  }
+  request.GetResponse(&response)
 
   return &response, nil
 }
@@ -261,15 +183,8 @@ func GetPreferences() (*GetPreferencesResponse, error) {
     Args:   map[string]string{},
   }
 
-  rawJson, err := request.Get()
-  if err != nil {
-    return nil, err
-  }
-
   var response GetPreferencesResponse
-  if err := json.Unmarshal(rawJson, &response); err != nil {
-    return nil, err
-  }
+  request.GetResponse(&response)
 
   return &response, nil
 }
@@ -286,15 +201,8 @@ func SetPreferences(prefs Preferences) (*BasicResponse, error) {
     request.Args[key] = string(value)
   }
 
-  rawJson, err := request.Get()
-  if err != nil {
-    return nil, err
-  }
-
   var response BasicResponse
-  if err := json.Unmarshal(rawJson, &response); err != nil {
-    return nil, err
-  }
+  request.GetResponse(&response)
 
   return &response, nil
 }
@@ -305,15 +213,8 @@ func GetOS() (*GetOSResponse, error) {
     Args:   map[string]string{},
   }
 
-  rawJson, err := request.Get()
-  if err != nil {
-    return nil, err
-  }
-
   var response GetOSResponse
-  if err := json.Unmarshal(rawJson, &response); err != nil {
-    return nil, err
-  }
+  request.GetResponse(&response)
 
   return &response, nil
 }
@@ -324,15 +225,8 @@ func GetVersion() (*GetVersionResponse, error) {
     Args:   map[string]string{},
   }
 
-  rawJson, err := request.Get()
-  if err != nil {
-    return nil, err
-  }
-
   var response GetVersionResponse
-  if err := json.Unmarshal(rawJson, &response); err != nil {
-    return nil, err
-  }
+  request.GetResponse(&response)
 
   return &response, nil
 }
@@ -343,15 +237,8 @@ func GetSpeed() (*GetSpeedResponse, error) {
     Args:   map[string]string{},
   }
 
-  rawJson, err := request.Get()
-  if err != nil {
-    return nil, err
-  }
-
   var response GetSpeedResponse
-  if err := json.Unmarshal(rawJson, &response); err != nil {
-    return nil, err
-  }
+  request.GetResponse(&response)
 
   return &response, nil
 }
