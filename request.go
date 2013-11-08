@@ -10,6 +10,7 @@ import (
 )
 
 type Request struct {
+  API    *BTSyncAPI
   Method string
   Args   map[string]string
 }
@@ -24,7 +25,7 @@ func (request *Request) URL() string {
     params.Add(key, value)
   }
 
-  s := fmt.Sprintf(endpoint, Port) + params.Encode()
+  s := fmt.Sprintf(request.API.Endpoint, request.API.Port) + params.Encode()
   return s
 }
 
@@ -35,7 +36,13 @@ func (request *Request) Get() (response []byte, ret error) {
 
   s := request.URL()
 
-  res, err := http.Get(s)
+  fmt.Println(s)
+
+  client := &http.Client{}
+  req, err := http.NewRequest("GET", s, nil)
+  req.SetBasicAuth(request.API.Username, request.API.Password)
+  res, err := client.Do(req)
+
   defer res.Body.Close()
   if err != nil {
     return nil, err
@@ -50,6 +57,8 @@ func (request *Request) GetResponse(response interface{}) (*interface{}, error) 
   if err != nil {
     return nil, err
   }
+
+  fmt.Printf("JSON: %s\n", rawJson)
 
   if err := json.Unmarshal(rawJson, &response); err != nil {
     return nil, err

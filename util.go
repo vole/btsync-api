@@ -5,14 +5,6 @@ import (
   "strconv"
 )
 
-func boolToString(boolean bool) string {
-  if boolean {
-    return "1"
-  } else {
-    return "0"
-  }
-}
-
 // https://gist.github.com/tonyhb/5819315
 func structToMap(i interface{}) map[string]string {
   m := make(map[string]string)

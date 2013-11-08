@@ -49,16 +49,16 @@ type Preferences struct {
   WritePoolSize              int    `json:"write_pool_size"`
 }
 
-type BasicResponse struct {
+type Response struct {
   Error   int    `json:"error"`
   Message string `json:"message"`
 }
 
-type GetFoldersResponse struct {
-  Folders []Folder `json:"folders"`
-}
+type GetFoldersResponse []Folder
 
 type GetFilesResponse []File
+
+type SetFilePrefsResponse File
 
 type GetFolderPeersResponse struct {
   Peers []Peer `json:"peers"`
