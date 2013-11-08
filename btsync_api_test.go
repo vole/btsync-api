@@ -2,10 +2,12 @@ package btsync_api
 
 import (
   "flag"
-  //"fmt"
+  "fmt"
   ioutil "io/ioutil"
+  "log"
   "os"
   "path"
+  "strings"
   "testing"
   "time"
 )
@@ -29,8 +31,35 @@ var password = flag.String("password", "test", "BT Sync API password")
 // BTSync API port.
 var port = flag.Int("port", 8080, "BT Sync API port")
 
+// If tests are failing and you're not sure why, this may help.
+var verbose = flag.Bool("verbose", false, "Enable verbose test logging")
+
+// For logging test information and debug stuff.
+var logger = log.New(os.Stdout, "", log.Ldate|log.Ltime)
+
+// Log a debug message to stdout.
+func Debug(msg string, a ...interface{}) {
+  if *verbose {
+    formatted := fmt.Sprintf(msg, a...)
+    logger.Println(fmt.Sprintf("\033[35;1mDEBUG:\033[0m %s", formatted))
+  }
+}
+
+// Log an info message to stdout.
+func Log(msg string, a ...interface{}) {
+  formatted := fmt.Sprintf(msg, a...)
+  logger.Println(fmt.Sprintf("\033[34;1mINFO:\033[0m %s", formatted))
+}
+
 // Create a temp dir to use for tests.
 func TestSetup(t *testing.T) {
+  Log("Setting up test environment")
+
+  Debug("login: %s", *login)
+  Debug("password: %s", *password)
+  Debug("port: %d", *port)
+  Debug("verbose: %t", *verbose)
+
   dir, err := ioutil.TempDir(Dir, Prefix)
   if err != nil {
     t.Errorf("Unable to create test directory in %s", Dir)
@@ -38,6 +67,7 @@ func TestSetup(t *testing.T) {
   }
 
   TmpDir = dir
+  Debug("Temp Dir: %s", TmpDir)
 
   file, err := ioutil.TempFile(TmpDir, Prefix)
   if err != nil {
@@ -46,11 +76,15 @@ func TestSetup(t *testing.T) {
   }
 
   TmpFile = file
+  Debug("Temp File: %s", (*TmpFile).Name())
 }
 
 // Test creating, removing folders.
 func TestFolders(t *testing.T) {
-  api := New(*login, *password, *port)
+  api := New(*login, *password, *port, *verbose)
+
+  Log("Testing AddFolder")
+
   addFolderResponse, err := api.AddFolder(TmpDir)
 
   if err != nil {
@@ -62,6 +96,8 @@ func TestFolders(t *testing.T) {
     t.Errorf("Error adding new folder")
     return
   }
+
+  Log("Testing GetFolders")
 
   getFoldersResponse, err := api.GetFolders()
 
@@ -89,6 +125,8 @@ func TestFolders(t *testing.T) {
     return
   }
 
+  Log("Testing GetFolder")
+
   getFolderResponse, err := api.GetFolder(testDir.Secret)
   if err != nil {
     t.Errorf("Error making request to get a single folder")
@@ -105,7 +143,11 @@ func TestFolders(t *testing.T) {
     return
   }
 
+  Debug("Sleeping for 15 seconds to allow BTSync to pick up new file.")
+
   time.Sleep(15000 * time.Millisecond)
+
+  Log("Testing GetFiles")
 
   getFilesResponse, err := api.GetFiles(testDir.Secret)
   if err != nil {
@@ -123,6 +165,8 @@ func TestFolders(t *testing.T) {
     return
   }
 
+  Log("Testing SetFilePrefs")
+
   setFilePrefsResponse, err := api.SetFilePrefs(testDir.Secret, path.Base((*TmpFile).Name()), 1)
   if err != nil {
     t.Errorf("Error making request to set file preferences")
@@ -134,15 +178,60 @@ func TestFolders(t *testing.T) {
     return
   }
 
+  Log("Testing GetFolderPeers")
   _, err = api.GetFolderPeers(testDir.Secret)
   if err != nil {
     t.Errorf("Error making request to get folder peers")
     return
   }
 
-  getSecretsResponse, err := api.GetSecrets()
+  Log("Testing GetSecrets")
+
+  getSecretsResponse, err := api.GetSecrets(true)
   if err != nil {
     t.Errorf("Error requesting secrets")
+    return
+  }
+
+  if (*getSecretsResponse).Encryption == "" {
+    t.Errorf("Expected response to have an encrypted key")
+    return
+  }
+
+  getSecretsResponse, err = api.GetSecretsForSecret((*getSecretsResponse).ReadOnly)
+  if err != nil {
+    t.Errorf("Error requesting secrets for secret: %s", (*getSecretsResponse).ReadOnly)
+    return
+  }
+
+  if (*getSecretsResponse).ReadOnly == "" {
+    t.Errorf("Expected response to have a read only key")
+    return
+  }
+
+  Log("Testing GetFolderPrefs")
+
+  getFolderPrefsResponse, err := api.GetFolderPrefs(testDir.Secret)
+  if err != nil {
+    t.Errorf("Error requesting prefs for folder")
+    return
+  }
+
+  if (*getFolderPrefsResponse).SearchLAN != 1 {
+    t.Errorf("Exepected search_lan to be 1")
+    return
+  }
+
+  Log("Testing SetFolderPrefs")
+
+  prefs := &FolderPreferences{
+    SearchLAN: 1,
+  }
+
+  _, err = api.SetFolderPrefs(testDir.Secret, prefs)
+  if err != nil {
+    t.Errorf("Error making request to set folder preferences")
+    return
   }
 }
 
@@ -158,6 +247,8 @@ func TestUtils(t *testing.T) {
     Bar: "bar",
   }
 
+  Log("Testing structToMap")
+
   m := structToMap(s)
 
   if m["foo"] != "foo" {
@@ -166,5 +257,25 @@ func TestUtils(t *testing.T) {
 }
 
 func TestCleanup(t *testing.T) {
+  api := New(*login, *password, *port, *verbose)
 
+  Log("Cleaning up test environment")
+
+  folders, err := api.GetFolders()
+  if err != nil {
+    t.Errorf("Error getting folders for cleanup.")
+    return
+  }
+
+  for _, folder := range *folders {
+    if strings.HasPrefix(path.Base(folder.Dir), Prefix) {
+      Debug("Cleaning up %s", folder.Dir)
+
+      _, err := api.RemoveFolder(folder.Secret)
+      if err != nil {
+        t.Errorf("Error removing %s", folder.Dir)
+        return
+      }
+    }
+  }
 }

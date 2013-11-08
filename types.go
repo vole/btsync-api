@@ -49,6 +49,15 @@ type Preferences struct {
   WritePoolSize              int    `json:"write_pool_size"`
 }
 
+type FolderPreferences struct {
+  SearchLAN      int `json:"search_lan"`
+  UseDHT         int `json:"use_dht"`
+  UseHosts       int `json:"use_hosts"`
+  UseRelayServer int `json:"use_relay_server"`
+  UseSyncTrash   int `json:"use_sync_trash"`
+  UseTracker     int `json:"use_tracker"`
+}
+
 type Response struct {
   Error   int    `json:"error"`
   Message string `json:"message"`
@@ -65,19 +74,12 @@ type GetFolderPeersResponse struct {
 }
 
 type GetSecretsResponse struct {
-  ReadOnly  string `json:"read_only"`
-  ReadWrite string `json:"read_write"`
-  Encrypted string `json:"encrypted"`
+  ReadOnly   string `json:"read_only"`
+  ReadWrite  string `json:"read_write"`
+  Encryption string `json:"encryption"`
 }
 
-type GetFolderPrefsResponse struct {
-  SearchLAN      int `json:"search_lan"`
-  UseDHT         int `json:"use_dht"`
-  UseHosts       int `json:"use_hosts"`
-  UseRelayServer int `json:"use_relay_server"`
-  UseSyncTrash   int `json:"use_sync_trash"`
-  UseTracker     int `json:"use_tracker"`
-}
+type GetFolderPrefsResponse FolderPreferences
 
 type GetFolderHostsResponse []string
 

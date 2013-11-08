@@ -1,6 +1,8 @@
 package btsync_api
 
 import (
+  "log"
+  "os"
   "strconv"
   "strings"
 )
@@ -12,10 +14,13 @@ type BTSyncAPI struct {
   Password string
   Port     int
   Endpoint string
+  Debug    bool
+  Logger   *log.Logger
 }
 
-func New(login string, password string, port int) *BTSyncAPI {
-  return &BTSyncAPI{login, password, port, endpoint}
+func New(login string, password string, port int, debug bool) *BTSyncAPI {
+  logger := log.New(os.Stdout, "[BTSyncAPI] ", log.Ldate|log.Ltime)
+  return &BTSyncAPI{login, password, port, endpoint, debug, logger}
 }
 
 func (api *BTSyncAPI) Request(method string, args map[string]string) *Request {
@@ -122,14 +127,21 @@ func (api *BTSyncAPI) GetFolderPeers(secret string) (*GetFolderPeersResponse, er
   return &response, nil
 }
 
-func (api *BTSyncAPI) GetSecretsForSecret(secret string, ecryption bool) (*GetSecretsResponse, error) {
+func (api *BTSyncAPI) GetSecretsForSecret(secret string) (*GetSecretsResponse, error) {
+  request := api.Request("get_secrets", map[string]string{
+    "secret": secret,
+  })
+
+  var response GetSecretsResponse
+  request.GetResponse(&response)
+
+  return &response, nil
+}
+
+func (api *BTSyncAPI) GetSecrets(encryption bool) (*GetSecretsResponse, error) {
   args := map[string]string{}
 
-  if secret != "" {
-    args["secret"] = secret
-  }
-
-  if ecryption {
+  if encryption {
     args["type"] = "encryption"
   }
 
@@ -139,10 +151,6 @@ func (api *BTSyncAPI) GetSecretsForSecret(secret string, ecryption bool) (*GetSe
   request.GetResponse(&response)
 
   return &response, nil
-}
-
-func (api *BTSyncAPI) GetSecrets(encryption bool) (*GetSecretsResponse, error) {
-  return api.GetSecretsForSecret("", encryption)
 }
 
 func (api *BTSyncAPI) GetFolderPrefs(secret string) (*GetFolderPrefsResponse, error) {
@@ -156,14 +164,11 @@ func (api *BTSyncAPI) GetFolderPrefs(secret string) (*GetFolderPrefsResponse, er
   return &response, nil
 }
 
-func (api *BTSyncAPI) SetFolderPrefs(secret string, prefs map[string]string) (*Response, error) {
-  request := api.Request("set_folder_prefs", map[string]string{
-    "secret": secret,
-  })
+func (api *BTSyncAPI) SetFolderPrefs(secret string, prefs *FolderPreferences) (*Response, error) {
+  args := structToMap(prefs)
+  args["secret"] = secret
 
-  for key, value := range prefs {
-    request.Args[key] = string(value)
-  }
+  request := api.Request("set_folder_prefs", args)
 
   var response Response
   request.GetResponse(&response)
