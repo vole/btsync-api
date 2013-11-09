@@ -24,11 +24,9 @@ var TmpFile *os.File
 // Prefix used by the temp dir for easier cleanup.
 var Prefix = "btsync_api_test_"
 
-// BTSync API credentials.
+// BTSync API settings.
 var login = flag.String("login", "test", "BT Sync API login")
 var password = flag.String("password", "test", "BT Sync API password")
-
-// BTSync API port.
 var port = flag.Int("port", 8080, "BT Sync API port")
 
 // If tests are failing and you're not sure why, this may help.
@@ -53,7 +51,7 @@ func Log(msg string, a ...interface{}) {
 
 // Create a temp dir to use for tests.
 func TestSetup(t *testing.T) {
-  Log("Setting up test environment")
+  Log("Setting up")
 
   Debug("login: %s", *login)
   Debug("password: %s", *password)
@@ -62,7 +60,7 @@ func TestSetup(t *testing.T) {
 
   dir, err := ioutil.TempDir(Dir, Prefix)
   if err != nil {
-    t.Errorf("Unable to create test directory in %s", Dir)
+    t.Errorf("Unable to create test directory in %s: %s", Dir, err)
     return
   }
 
@@ -71,7 +69,7 @@ func TestSetup(t *testing.T) {
 
   file, err := ioutil.TempFile(TmpDir, Prefix)
   if err != nil {
-    t.Errorf("Unable to create temp file in %s", TmpDir)
+    t.Errorf("Unable to create temp file in %s: %s", TmpDir, err)
     return
   }
 
@@ -81,6 +79,7 @@ func TestSetup(t *testing.T) {
 
 // Test creating, removing folders.
 func TestFolders(t *testing.T) {
+  return
   api := New(*login, *password, *port, *verbose)
 
   Log("Testing AddFolder")
@@ -88,7 +87,7 @@ func TestFolders(t *testing.T) {
   addFolderResponse, err := api.AddFolder(TmpDir)
 
   if err != nil {
-    t.Errorf("Error making request to add new folder")
+    t.Errorf("Error making request to add new folder: %s", err)
     return
   }
 
@@ -102,7 +101,7 @@ func TestFolders(t *testing.T) {
   getFoldersResponse, err := api.GetFolders()
 
   if err != nil {
-    t.Errorf("Error making request to get all folders")
+    t.Errorf("Error making request to get all folders: %s", err)
     return
   }
 
@@ -129,7 +128,7 @@ func TestFolders(t *testing.T) {
 
   getFolderResponse, err := api.GetFolder(testDir.Secret)
   if err != nil {
-    t.Errorf("Error making request to get a single folder")
+    t.Errorf("Error making request to get a single folder: %s", err)
     return
   }
 
@@ -151,7 +150,7 @@ func TestFolders(t *testing.T) {
 
   getFilesResponse, err := api.GetFiles(testDir.Secret)
   if err != nil {
-    t.Errorf("Error making request to get files")
+    t.Errorf("Error making request to get files: %s", err)
     return
   }
 
@@ -169,11 +168,15 @@ func TestFolders(t *testing.T) {
 
   setFilePrefsResponse, err := api.SetFilePrefs(testDir.Secret, path.Base((*TmpFile).Name()), 1)
   if err != nil {
-    t.Errorf("Error making request to set file preferences")
+    t.Errorf("Error making request to set file preferences: %s", err)
     return
   }
 
-  if (*setFilePrefsResponse).State == "created" {
+  if len(*setFilePrefsResponse) != 1 {
+    t.Errorf("Expected response to have a length of 1")
+  }
+
+  if (*setFilePrefsResponse)[0].State != "created" {
     t.Errorf("Expected file object in response")
     return
   }
@@ -181,7 +184,7 @@ func TestFolders(t *testing.T) {
   Log("Testing GetFolderPeers")
   _, err = api.GetFolderPeers(testDir.Secret)
   if err != nil {
-    t.Errorf("Error making request to get folder peers")
+    t.Errorf("Error making request to get folder peers: %s", err)
     return
   }
 
@@ -225,12 +228,67 @@ func TestFolders(t *testing.T) {
   Log("Testing SetFolderPrefs")
 
   prefs := &FolderPreferences{
-    SearchLAN: 1,
+    SearchLAN:      1,
+    SelectiveSync:  1,
+    UseDHT:         1,
+    UseHosts:       1,
+    UseRelayServer: 1,
+    UseSyncTrash:   1,
+    UseTracker:     1,
   }
 
   _, err = api.SetFolderPrefs(testDir.Secret, prefs)
   if err != nil {
     t.Errorf("Error making request to set folder preferences")
+    return
+  }
+
+}
+
+func TestOther(t *testing.T) {
+  api := New(*login, *password, *port, *verbose)
+
+  // BUG(aaron): I don't know what the actual list of OS names is.
+  osList := []string{"win32", "mac", "linux"}
+
+  Log("Testing GetOS")
+
+  getOSResponse, err := api.GetOS()
+  if err != nil {
+    t.Errorf("Error getting OS: %s", err)
+    return
+  }
+
+  found := false
+  for _, os := range osList {
+    if os == (*getOSResponse).Name {
+      found = true
+    }
+  }
+
+  if !found {
+    t.Errorf("Expected OS to be one of: %s", strings.Join(osList, ","))
+    return
+  }
+
+  Log("Testing GetVersion")
+
+  getVersionResponse, err := api.GetVersion()
+  if err != nil {
+    t.Errorf("Error getting version: %s", err)
+    return
+  }
+
+  if (*getVersionResponse).Version == "" {
+    t.Errorf("Expected version to not be empty")
+    return
+  }
+
+  Log("Testing GetSpeed")
+
+  _, err = api.GetSpeed()
+  if err != nil {
+    t.Error("Error getting speed: %s", err)
     return
   }
 }
@@ -259,7 +317,7 @@ func TestUtils(t *testing.T) {
 func TestCleanup(t *testing.T) {
   api := New(*login, *password, *port, *verbose)
 
-  Log("Cleaning up test environment")
+  Log("Tearing down")
 
   folders, err := api.GetFolders()
   if err != nil {
@@ -278,4 +336,6 @@ func TestCleanup(t *testing.T) {
       }
     }
   }
+
+  Log("☺")
 }

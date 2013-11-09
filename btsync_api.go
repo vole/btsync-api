@@ -1,6 +1,7 @@
 package btsync_api
 
 import (
+  //  "fmt"
   "log"
   "os"
   "strconv"
@@ -31,7 +32,7 @@ func (api *BTSyncAPI) Request(method string, args map[string]string) *Request {
   }
 }
 
-func (api *BTSyncAPI) AddFolderWithSecret(folder string, secret string) (*Response, error) {
+func (api *BTSyncAPI) AddFolderWithSecret(folder string, secret string) (response *Response, err error) {
   args := map[string]string{
     "dir": folder,
   }
@@ -42,28 +43,28 @@ func (api *BTSyncAPI) AddFolderWithSecret(folder string, secret string) (*Respon
 
   request := api.Request("add_folder", args)
 
-  var response Response
-  request.GetResponse(&response)
+  response = &Response{}
+  err = request.GetResponse(response)
 
-  return &response, nil
+  return
 }
 
 func (api *BTSyncAPI) AddFolder(folder string) (*Response, error) {
   return api.AddFolderWithSecret(folder, "")
 }
 
-func (api *BTSyncAPI) RemoveFolder(secret string) (*Response, error) {
+func (api *BTSyncAPI) RemoveFolder(secret string) (response *Response, err error) {
   request := api.Request("remove_folder", map[string]string{
     "secret": secret,
   })
 
-  var response Response
-  request.GetResponse(&response)
+  response = &Response{}
+  err = request.GetResponse(response)
 
-  return &response, nil
+  return
 }
 
-func (api *BTSyncAPI) GetFolder(secret string) (*GetFoldersResponse, error) {
+func (api *BTSyncAPI) GetFolder(secret string) (response *GetFoldersResponse, err error) {
   args := map[string]string{}
 
   if secret != "" {
@@ -72,17 +73,17 @@ func (api *BTSyncAPI) GetFolder(secret string) (*GetFoldersResponse, error) {
 
   request := api.Request("get_folders", args)
 
-  var response GetFoldersResponse
-  request.GetResponse(&response)
+  response = &GetFoldersResponse{}
+  err = request.GetResponse(response)
 
-  return &response, nil
+  return
 }
 
 func (api *BTSyncAPI) GetFolders() (*GetFoldersResponse, error) {
   return api.GetFolder("")
 }
 
-func (api *BTSyncAPI) GetFilesForPath(secret string, path string) (*GetFilesResponse, error) {
+func (api *BTSyncAPI) GetFilesForPath(secret string, path string) (response *GetFilesResponse, err error) {
   args := map[string]string{
     "secret": secret,
   }
@@ -93,52 +94,52 @@ func (api *BTSyncAPI) GetFilesForPath(secret string, path string) (*GetFilesResp
 
   request := api.Request("get_files", args)
 
-  var response GetFilesResponse
-  request.GetResponse(&response)
+  response = &GetFilesResponse{}
+  err = request.GetResponse(response)
 
-  return &response, nil
+  return
 }
 
 func (api *BTSyncAPI) GetFiles(secret string) (*GetFilesResponse, error) {
   return api.GetFilesForPath(secret, "")
 }
 
-func (api *BTSyncAPI) SetFilePrefs(secret string, path string, download int) (*SetFilePrefsResponse, error) {
+func (api *BTSyncAPI) SetFilePrefs(secret string, path string, download int) (response *SetFilePrefsResponse, err error) {
   request := api.Request("set_file_prefs", map[string]string{
     "secret":   secret,
     "path":     path,
     "download": strconv.Itoa(download),
   })
 
-  var response SetFilePrefsResponse
-  request.GetResponse(&response)
+  response = &SetFilePrefsResponse{}
+  err = request.GetResponse(response)
 
-  return &response, nil
+  return
 }
 
-func (api *BTSyncAPI) GetFolderPeers(secret string) (*GetFolderPeersResponse, error) {
+func (api *BTSyncAPI) GetFolderPeers(secret string) (response *GetFolderPeersResponse, err error) {
   request := api.Request("get_folder_peers", map[string]string{
     "secret": secret,
   })
 
-  var response GetFolderPeersResponse
-  request.GetResponse(&response)
+  response = &GetFolderPeersResponse{}
+  err = request.GetResponse(response)
 
-  return &response, nil
+  return
 }
 
-func (api *BTSyncAPI) GetSecretsForSecret(secret string) (*GetSecretsResponse, error) {
+func (api *BTSyncAPI) GetSecretsForSecret(secret string) (response *GetSecretsResponse, err error) {
   request := api.Request("get_secrets", map[string]string{
     "secret": secret,
   })
 
-  var response GetSecretsResponse
-  request.GetResponse(&response)
+  response = &GetSecretsResponse{}
+  err = request.GetResponse(response)
 
-  return &response, nil
+  return
 }
 
-func (api *BTSyncAPI) GetSecrets(encryption bool) (*GetSecretsResponse, error) {
+func (api *BTSyncAPI) GetSecrets(encryption bool) (response *GetSecretsResponse, err error) {
   args := map[string]string{}
 
   if encryption {
@@ -147,68 +148,68 @@ func (api *BTSyncAPI) GetSecrets(encryption bool) (*GetSecretsResponse, error) {
 
   request := api.Request("get_secrets", args)
 
-  var response GetSecretsResponse
-  request.GetResponse(&response)
+  response = &GetSecretsResponse{}
+  err = request.GetResponse(response)
 
-  return &response, nil
+  return
 }
 
-func (api *BTSyncAPI) GetFolderPrefs(secret string) (*GetFolderPrefsResponse, error) {
+func (api *BTSyncAPI) GetFolderPrefs(secret string) (response *GetFolderPrefsResponse, err error) {
   request := api.Request("get_folder_prefs", map[string]string{
     "secret": secret,
   })
 
-  var response GetFolderPrefsResponse
-  request.GetResponse(&response)
+  response = &GetFolderPrefsResponse{}
+  err = request.GetResponse(response)
 
-  return &response, nil
+  return
 }
 
-func (api *BTSyncAPI) SetFolderPrefs(secret string, prefs *FolderPreferences) (*Response, error) {
+func (api *BTSyncAPI) SetFolderPrefs(secret string, prefs *FolderPreferences) (response *SetFolderPrefsResponse, err error) {
   args := structToMap(prefs)
   args["secret"] = secret
 
   request := api.Request("set_folder_prefs", args)
 
-  var response Response
-  request.GetResponse(&response)
+  response = &SetFolderPrefsResponse{}
+  err = request.GetResponse(response)
 
-  return &response, nil
+  return
 }
 
-func (api *BTSyncAPI) GetFolderHosts(secret string) (*GetFolderHostsResponse, error) {
+func (api *BTSyncAPI) GetFolderHosts(secret string) (response *GetFolderHostsResponse, err error) {
   request := api.Request("get_folder_hosts", map[string]string{
     "secret": secret,
   })
 
-  var response GetFolderHostsResponse
-  request.GetResponse(&response)
+  response = &GetFolderHostsResponse{}
+  err = request.GetResponse(response)
 
-  return &response, nil
+  return
 }
 
-func (api *BTSyncAPI) SetFolderHosts(secret string, hosts []string) (*Response, error) {
+func (api *BTSyncAPI) SetFolderHosts(secret string, hosts []string) (response *Response, err error) {
   request := api.Request("set_folder_hosts", map[string]string{
     "secret": secret,
     "hosts":  strings.Join(hosts, ","),
   })
 
-  var response Response
-  request.GetResponse(&response)
+  response = &Response{}
+  err = request.GetResponse(response)
 
-  return &response, nil
+  return
 }
 
-func (api *BTSyncAPI) GetPreferences() (*GetPreferencesResponse, error) {
+func (api *BTSyncAPI) GetPreferences() (response *GetPreferencesResponse, err error) {
   request := api.Request("get_prefs", map[string]string{})
 
-  var response GetPreferencesResponse
-  request.GetResponse(&response)
+  response = &GetPreferencesResponse{}
+  err = request.GetResponse(response)
 
-  return &response, nil
+  return
 }
 
-func (api *BTSyncAPI) SetPreferences(prefs Preferences) (*Response, error) {
+func (api *BTSyncAPI) SetPreferences(prefs Preferences) (response *Response, err error) {
   request := api.Request("set_prefs", map[string]string{})
 
   prefsMap := structToMap(prefs)
@@ -217,35 +218,35 @@ func (api *BTSyncAPI) SetPreferences(prefs Preferences) (*Response, error) {
     request.Args[key] = string(value)
   }
 
-  var response Response
-  request.GetResponse(&response)
+  response = &Response{}
+  err = request.GetResponse(response)
 
-  return &response, nil
+  return
 }
 
-func (api *BTSyncAPI) GetOS() (*GetOSResponse, error) {
+func (api *BTSyncAPI) GetOS() (response *GetOSResponse, err error) {
   request := api.Request("get_os", map[string]string{})
 
-  var response GetOSResponse
-  request.GetResponse(&response)
+  response = &GetOSResponse{}
+  err = request.GetResponse(response)
 
-  return &response, nil
+  return
 }
 
-func (api *BTSyncAPI) GetVersion() (*GetVersionResponse, error) {
+func (api *BTSyncAPI) GetVersion() (response *GetVersionResponse, err error) {
   request := api.Request("get_version", map[string]string{})
 
-  var response GetVersionResponse
-  request.GetResponse(&response)
+  response = &GetVersionResponse{}
+  err = request.GetResponse(response)
 
-  return &response, nil
+  return
 }
 
-func (api *BTSyncAPI) GetSpeed() (*GetSpeedResponse, error) {
+func (api *BTSyncAPI) GetSpeed() (response *GetSpeedResponse, err error) {
   request := api.Request("get_speed", map[string]string{})
 
-  var response GetSpeedResponse
-  request.GetResponse(&response)
+  response = &GetSpeedResponse{}
+  err = request.GetResponse(response)
 
-  return &response, nil
+  return
 }

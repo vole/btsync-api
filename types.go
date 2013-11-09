@@ -51,6 +51,7 @@ type Preferences struct {
 
 type FolderPreferences struct {
   SearchLAN      int `json:"search_lan"`
+  SelectiveSync  int `json:"selective_sync"`
   UseDHT         int `json:"use_dht"`
   UseHosts       int `json:"use_hosts"`
   UseRelayServer int `json:"use_relay_server"`
@@ -67,11 +68,9 @@ type GetFoldersResponse []Folder
 
 type GetFilesResponse []File
 
-type SetFilePrefsResponse File
+type SetFilePrefsResponse []File
 
-type GetFolderPeersResponse struct {
-  Peers []Peer `json:"peers"`
-}
+type GetFolderPeersResponse []Peer
 
 type GetSecretsResponse struct {
   ReadOnly   string `json:"read_only"`
@@ -80,6 +79,7 @@ type GetSecretsResponse struct {
 }
 
 type GetFolderPrefsResponse FolderPreferences
+type SetFolderPrefsResponse FolderPreferences
 
 type GetFolderHostsResponse []string
 

@@ -44,11 +44,23 @@ func (request *Request) Get() (response []byte, ret error) {
 
   // BUG(aaron): Currently nothing to handle the case where Basic Auth fails.
   req, err := http.NewRequest("GET", s, nil)
+  if err != nil {
+    return nil, err
+  }
+
   req.SetBasicAuth(request.API.Username, request.API.Password)
 
   res, err := client.Do(req)
   if err != nil {
     return nil, err
+  }
+
+  if request.API.Debug {
+    request.API.Logger.Printf("\033[32;1mSTATUS:\033[0m %d\n", res.StatusCode)
+  }
+
+  if res.StatusCode != 200 {
+    return nil, errors.New(fmt.Sprintf("Status: %d", res.StatusCode))
   }
 
   defer res.Body.Close()
@@ -57,10 +69,10 @@ func (request *Request) Get() (response []byte, ret error) {
   return body, nil
 }
 
-func (request *Request) GetResponse(response interface{}) (*interface{}, error) {
+func (request *Request) GetResponse(response interface{}) error {
   rawJson, err := request.Get()
   if err != nil {
-    return nil, err
+    return err
   }
 
   if request.API.Debug {
@@ -68,8 +80,8 @@ func (request *Request) GetResponse(response interface{}) (*interface{}, error) 
   }
 
   if err := json.Unmarshal(rawJson, &response); err != nil {
-    return nil, err
+    return err
   }
 
-  return &response, nil
+  return nil
 }
