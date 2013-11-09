@@ -33,7 +33,7 @@ var port = flag.Int("port", 8080, "BT Sync API port")
 var verbose = flag.Bool("verbose", false, "Enable verbose test logging")
 
 // For logging test information and debug stuff.
-var logger = log.New(os.Stdout, "", log.Ldate|log.Ltime)
+var logger = log.New(os.Stdout, "[BTSyncAPI] ", log.Ldate|log.Ltime)
 
 // Log a debug message to stdout.
 func Debug(msg string, a ...interface{}) {
@@ -74,12 +74,11 @@ func TestSetup(t *testing.T) {
   }
 
   TmpFile = file
-  Debug("Temp File: %s", (*TmpFile).Name())
+  Debug("Temp File: %s", TmpFile.Name())
 }
 
 // Test creating, removing folders.
 func TestFolders(t *testing.T) {
-  return
   api := New(*login, *password, *port, *verbose)
 
   Log("Testing AddFolder")
@@ -159,14 +158,14 @@ func TestFolders(t *testing.T) {
     return
   }
 
-  if (*getFilesResponse)[0].Name != path.Base((*TmpFile).Name()) {
-    t.Errorf("Expected %s to be %s", (*getFilesResponse)[0].Name, path.Base((*TmpFile).Name()))
+  if (*getFilesResponse)[0].Name != path.Base(TmpFile.Name()) {
+    t.Errorf("Expected %s to be %s", (*getFilesResponse)[0].Name, path.Base(TmpFile.Name()))
     return
   }
 
   Log("Testing SetFilePrefs")
 
-  setFilePrefsResponse, err := api.SetFilePrefs(testDir.Secret, path.Base((*TmpFile).Name()), 1)
+  setFilePrefsResponse, err := api.SetFilePrefs(testDir.Secret, path.Base(TmpFile.Name()), 1)
   if err != nil {
     t.Errorf("Error making request to set file preferences: %s", err)
     return
@@ -196,18 +195,18 @@ func TestFolders(t *testing.T) {
     return
   }
 
-  if (*getSecretsResponse).Encryption == "" {
+  if getSecretsResponse.Encryption == "" {
     t.Errorf("Expected response to have an encrypted key")
     return
   }
 
-  getSecretsResponse, err = api.GetSecretsForSecret((*getSecretsResponse).ReadOnly)
+  getSecretsResponse, err = api.GetSecretsForSecret(getSecretsResponse.ReadOnly)
   if err != nil {
-    t.Errorf("Error requesting secrets for secret: %s", (*getSecretsResponse).ReadOnly)
+    t.Errorf("Error requesting secrets for secret: %s", getSecretsResponse.ReadOnly)
     return
   }
 
-  if (*getSecretsResponse).ReadOnly == "" {
+  if getSecretsResponse.ReadOnly == "" {
     t.Errorf("Expected response to have a read only key")
     return
   }
@@ -220,7 +219,7 @@ func TestFolders(t *testing.T) {
     return
   }
 
-  if (*getFolderPrefsResponse).SearchLAN != 1 {
+  if getFolderPrefsResponse.SearchLAN != 1 {
     t.Errorf("Exepected search_lan to be 1")
     return
   }
@@ -261,7 +260,7 @@ func TestOther(t *testing.T) {
 
   found := false
   for _, os := range osList {
-    if os == (*getOSResponse).Name {
+    if os == getOSResponse.Name {
       found = true
     }
   }
@@ -279,7 +278,7 @@ func TestOther(t *testing.T) {
     return
   }
 
-  if (*getVersionResponse).Version == "" {
+  if getVersionResponse.Version == "" {
     t.Errorf("Expected version to not be empty")
     return
   }
