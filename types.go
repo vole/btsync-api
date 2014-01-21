@@ -15,7 +15,7 @@ type File struct {
   Name        string `json:"name"`
   Size        int64  `json:"size"`
   State       string `json:"state"`
-  TotalPieces string `json:"total_pieces"`
+  TotalPieces int    `json:"total_pieces"`
   Type        string `json:"type"`
   Download    int    `json:"download"`
 }
