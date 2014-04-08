@@ -81,7 +81,7 @@ type GetSecretsResponse struct {
 type GetFolderPrefsResponse FolderPreferences
 type SetFolderPrefsResponse FolderPreferences
 
-type GetFolderHostsResponse []string
+type GetFolderHostsResponse map[string][]string
 
 type GetPreferencesResponse Preferences
 
